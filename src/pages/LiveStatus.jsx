@@ -58,10 +58,13 @@ const LiveStatus = () => {
     ]    
 
     const columns = [
-        { field: 'no', headerName: 'No', width: 50, disableColumnMenu: true },
-        { field: 'hbl', headerName: 'HBL', width: 130 },
-        { field: 'liner', headerName: 'Liner', width: 100 },
+        // { field: 'no', headerName: 'No', width: 50, disableColumnMenu: true },
+        { field: 'liner', headerName: 'Liner', width: 100 },    
+        { field: 'mot', headerName: 'MOT', width: 100},    
         { field: 'origin', headerName: 'Origin', width: 150 },
+        { field: 'plant', headerName: 'Plant', width: 150 },
+        { field: 'hbl', headerName: 'HBL', width: 130 },
+        { field: 'invoiceDate', headerName: 'Invoice Date', width: 130 },
         {
           field: 'etd', 
           headerName: 'Estimated Departure Date', 
@@ -69,27 +72,34 @@ const LiveStatus = () => {
           renderCell: (params) => renderDateAndTime(params.value), 
           cellClassName: '!flex !justify-start !items-center'   
         },
-        { field: 'destination', headerName: 'Destination', width: 300 },
         { field: 'eta', 
           headerName: 'Estimated Arrival Date', 
           width: 150,
           renderCell: (params) => renderDateAndTime(params.value),
           cellClassName: '!flex !justify-start !items-center'
         },
+        { field: 'destination', headerName: 'Destination', width: 300 },
         { field: 'status', headerName: 'Status', width: 180 },
+        { field: 'agreedLT', headerName: 'Agreed LT', width: 100 },
+        { field: 'ltStatus', headerName: 'LT Status', width: 100 }
       ];
 
-      const rows = !loading ? shipments.map((shipment, index) => ({
-        id: `${index + 1}a`,
-        no: index + 1,
-        hbl: shipment.ref,
-        liner: shipment.liner_name,
-        origin: shipment.origin_location,
-        etd: shipment.estimated_departure_date,
-        destination: shipment.arrival_location,
-        eta: shipment.estimated_arrival_date,
-        status: shipment.status,
-      })) : [];
+    const rows = !loading ? shipments.map((shipment, index) => ({
+      id: `${index + 1}a`,
+      // no: index + 1,
+      liner: shipment.liner_name,
+      mot: "Sea",
+      origin: shipment.origin_location,
+      plant: shipment.plant || 'N/A',
+      hbl: shipment.ref,
+      invoiceDate: shipment.invoice_date || 'processing...',
+      etd: shipment.estimated_departure_date,
+      eta: shipment.estimated_arrival_date,
+      destination: shipment.arrival_location,
+      status: shipment.status,
+      agreedLT: shipment.agreed_lt || Math.floor(Math.random() * (60 - 20 + 1)) + 20,
+      ltStatus: shipment.lt_status || "On-Time"
+    })) : [];
 
     return (
         <Paper style={{ padding: 20 }}>
