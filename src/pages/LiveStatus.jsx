@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import { loadShipmentDetails } from '../actions/shipmentAction'
 
 const LiveStatus = () => {
-    const {loading, shipments, error} = useSelector(state => state.shipment);
+    const {loading, loadedShipmentsFromDatabase: shipments, error} = useSelector(state => state.shipment);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -97,7 +97,7 @@ const LiveStatus = () => {
       eta: shipment.estimated_arrival_date,
       destination: shipment.arrival_location,
       status: shipment.status,
-      agreedLT: shipment.agreed_lt || Math.floor(Math.random() * (60 - 20 + 1)) + 20,
+      agreedLT: shipment.lt_days,
       ltStatus: shipment.lt_status || "On-Time"
     })) : [];
 

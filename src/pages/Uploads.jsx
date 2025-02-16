@@ -1,30 +1,46 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PlusCircle, Loader2, Search, X } from 'lucide-react';
+import { PlusCircle, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { getShipmentDetails, loadShipmentDetails } from '../actions/shipmentAction';
 import { toast } from 'react-toastify';
 import { Button } from '@mui/material';
-import { Link } from 'react-router-dom';
 import { clearShipmentErrors } from '../slices/shipmentSlice';
-import LiveStatus from './LiveStatus';
+import countryList from 'react-select-country-list';
+import { useNavigate } from 'react-router';
+import { logOut } from '../actions/userAction';
 
 const ShipmentTracker = () => {
-  const [trackingNumbers, setTrackingNumbers] = useState([{ id: 1, number: '', carrier: 'maersk', origin_location: '' }]);
-  const [results, setResults] = useState([]);
+  const [trackingNumbers, setTrackingNumbers] = useState([{
+    id: 1,
+    ref: '',
+    mode_of_transport: '',
+    plant: '',
+    liner_name: 'maersk',
+    origin_location: '',
+    invoice_date: ''
+  }]);
+  const [excelData, setExcelData] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [listFormData, setListFormData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [excelData, setExcelData] = useState(null);
-  const [listFormData, setListFormData] = useState([]);
 
+  const changePage = (url) => {
+    window.location.href = url;
+  }
+
+  const options = useMemo(() => countryList().getData(), []);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading: shipmentLoading,
-          error: shipmentError,
-          loadedShipmentsFromDatabase: shipments,
-          shipmentErrors = [],
-          isDownloadEmailSent,
-          downloadLoading  } = useSelector((state) => state.shipment);
+  const { shipments, shipmentError, shipmentErrors, isDownloadEmailSent } = useSelector((state) => state.shipment);
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated]);
 
   const carriers = useMemo(() => [
     { value: 'maersk', label: 'Maersk' },
@@ -34,7 +50,6 @@ const ShipmentTracker = () => {
 
   const handleFileUpload = useCallback(async (event) => {
     const file = event.target.files[0];
-
     if (!file) return;
 
     if (!file.name.endsWith('.xlsx')) {
@@ -56,21 +71,20 @@ const ShipmentTracker = () => {
         setExcelData(sheetData);
       } catch (err) {
         console.error("Error parsing excel file", err);
-        setError('Error parsing the Excel file.  Please ensure it is correctly formatted.');
-        toast.error('Error parsing the Excel file.  Please ensure it is correctly formatted.');
+        setError('Error parsing the Excel file. Please ensure it is correctly formatted.');
+        toast.error('Error parsing the Excel file. Please ensure it is correctly formatted.');
         setUploadedFile(null);
       }
     };
 
     reader.onerror = (err) => {
-        console.error("Error reading file", err);
-        setError('Error reading the file.');
-        toast.error('Error reading the file.');
-        setUploadedFile(null);
+      console.error("Error reading file", err);
+      setError('Error reading the file.');
+      toast.error('Error reading the file.');
+      setUploadedFile(null);
     }
 
     reader.readAsArrayBuffer(file);
-
   }, []);
 
   useEffect(() => {
@@ -79,18 +93,12 @@ const ShipmentTracker = () => {
 
   useEffect(() => {
     if (excelData) {
-      if (excelData.length > 0) {
-        const newApiFormData = excelData.map((content) => ({
-          ref: content["HBL No"],
-          liner_name: content["Liner"],
-          origin_location: content["Origin Country"],
-        }));
-        setListFormData(newApiFormData);
-      }
-    }
-
-    if (shipments.length > 0) {
-      setResults(shipments);
+      const newApiFormData = excelData.map((content) => ({
+        ref: content["HBL No"],
+        liner_name: content["Liner"],
+        origin_location: content["Origin Country"],
+      }));
+      setListFormData(newApiFormData);
     }
 
     if (shipmentError) {
@@ -100,18 +108,17 @@ const ShipmentTracker = () => {
 
     if (shipmentErrors.length > 0) {
       shipmentErrors.forEach((error) => {
-        const errMsg = `An error occurred while tracking ${error.ref} kindly check the tracking number, liner and try again`;
+        const errMsg = `An error occurred while tracking ${error.ref}. Kindly check the tracking number, liner, and try again.`;
         toast.error(errMsg);
       });
       dispatch(clearShipmentErrors());
     }
-
-  }, [excelData, shipments, shipmentError, shipmentErrors, dispatch]);
+  }, [excelData, shipmentError, shipmentErrors, dispatch]);
 
   useEffect(() => {
     if (isDownloadEmailSent) {
       toast.success('Email sent successfully');
-      dispatch(clearDownloadEmailSent());
+      // dispatch(clearDownloadEmailSent());
     }
   }, [isDownloadEmailSent, dispatch]);
 
@@ -122,26 +129,10 @@ const ShipmentTracker = () => {
     setListFormData([]);
   }, []);
 
-  const handleTrackingNumberChange = useCallback((id, value) => {
+  const handleInputChange = useCallback((id, field, value) => {
     setTrackingNumbers(prev =>
       prev.map(item =>
-        item.id === id ? { ...item, number: value } : item
-      )
-    );
-  }, []);
-
-  const handleCarrierChange = useCallback((id, value) => {
-    setTrackingNumbers(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, carrier: value } : item
-      )
-    );
-  }, []);
-
-  const handleOriginLocationChange = useCallback((id, value) => {
-    setTrackingNumbers(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, origin_location: value } : item
+        item.id === id ? { ...item, [field]: value } : item
       )
     );
   }, []);
@@ -149,14 +140,20 @@ const ShipmentTracker = () => {
   const addTrackingNumber = useCallback(() => {
     setTrackingNumbers(prev => [
       ...prev,
-      { id: prev.length > 0 ? Math.max(...prev.map(item => item.id)) + 1 : 1, number: '', carrier: 'maersk', origin_location: '' }
+      {
+        id: prev.length > 0 ? Math.max(...prev.map(item => item.id)) + 1 : 1,
+        ref: '',
+        mode_of_transport: '',
+        plant: '',
+        liner_name: 'maersk',
+        origin_location: '',
+        invoice_date: ''
+      }
     ]);
   }, []);
 
   const removeTrackingNumber = useCallback((id) => {
-    setTrackingNumbers(prev =>
-      prev.filter(item => item.id !== id)
-    );
+    setTrackingNumbers(prev => prev.filter(item => item.id !== id));
   }, []);
 
   const trackShipments = useCallback(async (e) => {
@@ -170,9 +167,12 @@ const ShipmentTracker = () => {
         formData = listFormData;
       } else {
         formData = trackingNumbers.map(item => ({
-          ref: item.number,
-          liner_name: item.carrier,
-          origin_location: item.origin_location
+          ref: item.ref,
+          liner_name: item.liner_name,
+          origin_location: item.origin_location,
+          mode_of_transport: item.mode_of_transport,
+          plant: item.plant,
+          invoice_date: item.invoice_date
         }));
       }
 
@@ -187,24 +187,11 @@ const ShipmentTracker = () => {
     }
   }, [uploadedFile, listFormData, trackingNumbers, dispatch]);
 
-  const getStatusColor = useCallback((status) => {
-    const lowerStatus = status?.toLowerCase();
-    switch (lowerStatus) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'delayed':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'delivered':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  }, []);
+  const logOutHandler = () => {
+    dispatch(logOut());
+  }
 
-  const downloadHandler = useCallback(async (e) => {
-    e.preventDefault();
-    dispatch(downloadShipmentDetails());
-  }, [dispatch]);
+  console.log(trackingNumbers)
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -255,25 +242,53 @@ const ShipmentTracker = () => {
                   <input
                     type="text"
                     placeholder="Enter tracking number"
-                    value={item.number}
-                    onChange={(e) => handleTrackingNumberChange(item.id, e.target.value)}
+                    value={item.ref}
+                    onChange={(e) => handleInputChange(item.id, 'ref', e.target.value)}
+                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    disabled={!!uploadedFile}
+                  />
+                </div>
+                <div>
+                  <select
+                    value={item.mode_of_transport}
+                    onChange={(e) => handleInputChange(item.id, 'mode_of_transport', e.target.value)}
+                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    disabled={!!uploadedFile}
+                  >
+                    <option value="">Select MOT</option>
+                    <option value="sea">Sea</option>
+                    <option value="air">Air</option>
+                  </select>
+                </div>
+                <div className='w-48'>
+                  <input
+                    type="text"
+                    placeholder="Enter Plant"
+                    value={item.plant}
+                    onChange={(e) => handleInputChange(item.id, 'plant', e.target.value)}
                     className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     disabled={!!uploadedFile}
                   />
                 </div>
                 <div className='w-48'>
-                  <input type="text"
-                    placeholder="Enter Origin Location"
+                  <select
                     value={item.origin_location}
-                    onChange={(e) => handleOriginLocationChange(item.id, e.target.value)}
+                    onChange={(e) => handleInputChange(item.id, 'origin_location', e.target.value)}
                     className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     disabled={!!uploadedFile}
-                  />
+                  >
+                    <option value="">Select Origin Location</option>
+                    {options.map((option) => (
+                      <option key={option.value} value={option.label}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="w-48">
                   <select
-                    value={item.carrier}
-                    onChange={(e) => handleCarrierChange(item.id, e.target.value)}
+                    value={item.liner_name}
+                    onChange={(e) => handleInputChange(item.id, 'liner_name', e.target.value)}
                     className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     disabled={!!uploadedFile}
                   >
@@ -283,6 +298,16 @@ const ShipmentTracker = () => {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className='w-48'>
+                  <input
+                    type="date"
+                    placeholder="Enter Invoice Date"
+                    value={item.invoice_date}
+                    onChange={(e) => handleInputChange(item.id, 'invoice_date', e.target.value)}
+                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    disabled={!!uploadedFile}
+                  />
                 </div>
                 {trackingNumbers.length > 1 && !uploadedFile && (
                   <button
@@ -314,8 +339,16 @@ const ShipmentTracker = () => {
             </div>
           )}
         </div>
+
+        <div className='w-full flex justify-center'>
+          <button onClick={() => navigate('/live')} className='w-48 bg-blue-600 text-white p-2 rounded-xl'>
+            Check Live Status
+          </button>
+          <button onClick={() => logOutHandler()} className='w-48 bg-red-600 text-white  p-2 rounded-xl'>
+            Logout
+          </button>
+        </div>
       </div>
-      <LiveStatus />
     </div>
   );
 };
