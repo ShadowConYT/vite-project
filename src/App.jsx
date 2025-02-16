@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux'
 import { useSelector } from 'react-redux'
 import { loadUser } from './actions/userAction'
 import store from './store'
+import MaterialDisplay from './pages/MaterialDisplay'
 
 function App() {
 
@@ -21,14 +22,18 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
 
-    if ( token ) {
+    if (token) {
+      console.log("Token found:", token); // Debugging
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      store.dispatch(loadUser());
     } else {
-      store.dispatch(loadUser());
+      console.log("No token found in localStorage."); // Debugging
     }
-  }, [])
 
+    store.dispatch(loadUser());
+
+    // Debugging: Check if the headers are correctly set
+    console.log("Axios default headers:", axios.defaults.headers.common);
+  }, []);
   return (
     <>
     <Router>
@@ -38,7 +43,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path='/uploads' element={<Uploads />} />
         <Route path='/live' element={<LiveStatus />} />
-
+        <Route path='/material' element={<MaterialDisplay />} />
       </Routes>
     </Router>
     </>

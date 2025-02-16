@@ -9,6 +9,7 @@ import { clearShipmentErrors } from '../slices/shipmentSlice';
 import countryList from 'react-select-country-list';
 import { useNavigate } from 'react-router';
 import { logOut } from '../actions/userAction';
+import Materials from './Materials';
 
 const ShipmentTracker = () => {
   const [trackingNumbers, setTrackingNumbers] = useState([{
@@ -20,6 +21,7 @@ const ShipmentTracker = () => {
     origin_location: '',
     invoice_date: ''
   }]);
+  
   const [excelData, setExcelData] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [listFormData, setListFormData] = useState([]);
@@ -202,6 +204,8 @@ const ShipmentTracker = () => {
             <p className="text-gray-600">Track multiple shipments across different carriers</p>
           </div>
         </div>
+
+        <Materials />
 
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="mb-6">
