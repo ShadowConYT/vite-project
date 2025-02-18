@@ -11,6 +11,7 @@ import { useSelector } from 'react-redux'
 import { loadUser } from './actions/userAction'
 import store from './store'
 import MaterialDisplay from './pages/MaterialDisplay'
+import DrawerAppBar from './DrawerAppBar'
 
 function App() {
 
@@ -37,8 +38,8 @@ function App() {
   return (
     <>
     <Router>
+  <DrawerAppBar />
       <Routes>
-
         <Route path='/register' element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path='/uploads' element={<Uploads />} />
