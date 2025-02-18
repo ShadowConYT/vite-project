@@ -73,7 +73,7 @@ function DrawerAppBar(props) {
             component="div"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
           >
-            GrundFos
+            <img src='/Grundfos_Logo-White.png' alt='Grundfos Logo' className='h-10' />
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map(({ label, path }) => (

@@ -12,6 +12,7 @@ import { loadUser } from './actions/userAction'
 import store from './store'
 import MaterialDisplay from './pages/MaterialDisplay'
 import DrawerAppBar from './DrawerAppBar'
+import Home from './pages/Home'
 
 function App() {
 
@@ -40,6 +41,7 @@ function App() {
     <Router>
   <DrawerAppBar />
       <Routes>
+        <Route path='/' element={<Home />} />
         <Route path='/register' element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path='/uploads' element={<Uploads />} />
