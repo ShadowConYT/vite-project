@@ -18,28 +18,28 @@ const MaterialDisplay = () => {
   // Define columns dynamically based on materials data
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
-    { field: "item", headerName: "Item", width: 80 },
-    { field: "plant", headerName: "Plant", width: 100 },
     { field: "hblNo", headerName: "HBL No", width: 160 },
+    { field: "plant", headerName: "Plant", width: 100 },
+    { field: "purchasingDocument", headerName: "Purchasing Doc", width: 150 },
+    { field: "item", headerName: "Item", width: 80 },
     { field: "material", headerName: "Material", width: 120 },
     { field: "shortText", headerName: "Short Text", width: 250 },
-    { field: "deliveryDate", headerName: "Delivery Date", width: 150 },
     { field: "scheduledQuantity", headerName: "Scheduled Qty", width: 120 },
-    { field: "purchasingDocument", headerName: "Purchasing Doc", width: 150 },
+    { field: "deliveryDate", headerName: "Delivery Date", width: 150 },
     { field: "expectedDeliveryNumber", headerName: "Expected Delivery No", width: 180 },
   ];
 
   // Add id to each row if it doesn't exist
   const rows = data?.map((row, index) => ({
     id: index + 1, // Assigning an ID manually
-    item: row.Item || "N/A",
-    plant: row.Plant || "N/A",
     hblNo: row["HBL No"] || "N/A",
+    plant: row.Plant || "N/A",
+    purchasingDocument: row["Purchasing Document"] || "N/A",
+    item: row.Item || "N/A",
     material: row["Material"] || "N/A",
     shortText: row["Short Text"] || "N/A",
-    deliveryDate: row["Delivery Date"] || "N/A",
     scheduledQuantity: row["Scheduled Quantity"] || "N/A",
-    purchasingDocument: row["Purchasing Document"] || "N/A",
+    deliveryDate: row["Delivery Date"] || "N/A",
     expectedDeliveryNumber: row["Expected Delivery Number"] || "N/A",
   }));
   

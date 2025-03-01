@@ -81,10 +81,25 @@ const LiveStatus = () => {
         { field: 'destination', headerName: 'Destination', width: 300 },
         { field: 'status', headerName: 'Status', width: 180 },
         { field: 'agreedLT', headerName: 'Agreed LT', width: 100 },
-        { field: 'ltStatus', headerName: 'LT Status', width: 100 }
+        { field: 'ltStatus', headerName: 'LT Status', width: 100 },
+        { field: 'ltDays', headerName: 'LT Days Difference', width: 100}
       ];
 
-    const rows = !loading ? shipments.map((shipment, index) => ({
+    const rows = !loading ? shipments.map((shipment, index) => {
+      const invoiceDate = new Date(shipment.invoice_date);
+      const estimatedArrivalDate = new Date(shipment.estimated_arrival_date);
+      const updatedInvoiceDate = new Date(invoiceDate.setDate(invoiceDate.getDate() + shipment.lt_days));
+      const ltDaysDifference = Math.ceil((estimatedArrivalDate - updatedInvoiceDate) / (1000 * 60 * 60 * 24));
+
+      const formatDate = (date) => {
+      const d = new Date(date);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+      };
+
+      return {
       id: `${index + 1}a`,
       // no: index + 1,
       liner: shipment.liner_name,
@@ -92,14 +107,16 @@ const LiveStatus = () => {
       origin: shipment.origin_location,
       plant: shipment.plant || 'N/A',
       hbl: shipment.ref,
-      invoiceDate: shipment.invoice_date || 'processing...',
-      etd: shipment.estimated_departure_date,
-      eta: shipment.estimated_arrival_date,
+      invoiceDate: formatDate(shipment.invoice_date) || 'processing...',
+      etd: formatDate(shipment.estimated_departure_date),
+      eta: formatDate(shipment.estimated_arrival_date),
       destination: shipment.arrival_location,
       status: shipment.status,
       agreedLT: shipment.lt_days,
-      ltStatus: shipment.lt_status || "On-Time"
-    })) : [];
+      ltStatus: shipment.lt_status || "On-Time",
+      ltDays: ltDaysDifference
+      };
+    }) : [];
 
     return (
         <Paper style={{ padding: 20 }}>
