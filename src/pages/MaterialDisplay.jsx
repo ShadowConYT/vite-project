@@ -63,7 +63,7 @@ const MaterialDisplay = () => {
   }
 
   return (
-    <Paper style={{ padding: 20, height: 400 }}>
+    <Paper style={{ padding: 20}}>
       <DataGrid
         rows={rows}
         columns={columns}
