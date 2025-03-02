@@ -48,7 +48,7 @@ const MaterialDisplay = () => {
 
   if (loading) {
     return (
-      <Paper style={{ padding: 20, height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Paper style={{ padding: 20, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <CircularProgress />
       </Paper>
     );
@@ -56,7 +56,7 @@ const MaterialDisplay = () => {
 
   if (error) {
     return (
-      <Paper style={{ padding: 20, height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Paper style={{ padding: 20, border:'0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <p style={{ color: 'red' }}>{error}</p>
       </Paper>
     );
@@ -70,7 +70,6 @@ const MaterialDisplay = () => {
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
         disableSelectionOnClick
-        autoHeight
       />
     </Paper>
   );
