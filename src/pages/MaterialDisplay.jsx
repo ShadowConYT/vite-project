@@ -29,9 +29,14 @@ const MaterialDisplay = () => {
     { field: "expectedDeliveryNumber", headerName: "Expected Delivery No", width: 180 },
   ];
 
-  // Add id to each row if it doesn't exist
+  const convertExcelDate = (serial) => {
+    const date = new Date(1899, 11, 30); // Excel base date
+    date.setDate(date.getDate() + Number(serial));
+    return date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+  };
+  
   const rows = data?.map((row, index) => ({
-    id: index + 1, // Assigning an ID manually
+    id: index + 1,
     hblNo: row["HBL No"] || "N/A",
     plant: row.Plant || "N/A",
     purchasingDocument: row["Purchasing Document"] || "N/A",
@@ -39,9 +44,10 @@ const MaterialDisplay = () => {
     material: row["Material"] || "N/A",
     shortText: row["Short Text"] || "N/A",
     scheduledQuantity: row["Scheduled Quantity"] || "N/A",
-    deliveryDate: row["Delivery Date"] || "N/A",
+    deliveryDate: row["Delivery Date"] ? convertExcelDate(row["Delivery Date"]) : "N/A",
     expectedDeliveryNumber: row["Expected Delivery Number"] || "N/A",
   }));
+  
   
 
     console.log(rows)
