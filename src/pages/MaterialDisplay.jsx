@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Paper, CircularProgress } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar  } from "@mui/x-data-grid";
 import { useDispatch, useSelector } from "react-redux";
 import { getMaterials } from "../actions/materialAction";
 
@@ -76,6 +76,15 @@ const MaterialDisplay = () => {
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
         disableSelectionOnClick
+        disableColumnFilter
+        disableColumnSelector
+        disableDensitySelector
+        slots={{ toolbar: GridToolbar }}
+        slotProps={{
+          toolbar: {
+            showQuickFilter: true,
+          },
+        }}
       />
     </Paper>
   );

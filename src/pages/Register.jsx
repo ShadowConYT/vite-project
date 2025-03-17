@@ -10,7 +10,7 @@ const Register = () => {
         password: ''
     })
 
-    const { loading, isRegistered } = useSelector(state => state.auth);
+    const { loading, isRegistered, isAuthenticated } = useSelector(state => state.auth);
 
     const dispatch = useDispatch();
 
@@ -21,10 +21,14 @@ const Register = () => {
     }
 
     useEffect(() => {
+        if (isAuthenticated) {
+            window.location.href = '/';
+        }
+
         if(isRegistered) {
             window.location.href = '/login';
         }
-    }, [isRegistered]);
+    }, [isRegistered, isAuthenticated]);
 
     return (
         <section className="bg-gray-50">

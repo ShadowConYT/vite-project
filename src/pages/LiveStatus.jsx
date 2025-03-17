@@ -1,5 +1,5 @@
 import { Paper } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loadShipmentDetails } from '../actions/shipmentAction';
@@ -91,6 +91,15 @@ const LiveStatus = () => {
         pageSize={5}
         rowsPerPageOptions={[5]}
         disableSelectionOnClick
+        disableColumnFilter
+        disableColumnSelector
+        disableDensitySelector
+        slots={{ toolbar: GridToolbar }}
+        slotProps={{
+          toolbar: {
+            showQuickFilter: true,
+          },
+        }}
       />
     </Paper>
   );

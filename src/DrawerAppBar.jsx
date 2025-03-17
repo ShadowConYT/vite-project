@@ -15,20 +15,31 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 const drawerWidth = 240;
-const navItems = [
-  { label: 'Home', path: '/' },
-  { label: 'Live Status', path: '/live' },
-  { label: 'Uploads', path: '/uploads' },
-  { label: 'Material', path: '/material' },
-  { label: 'Login', path: '/login' },
-  { label: 'Register', path: '/register' },
-];
 
 function DrawerAppBar(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
+
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  // Dynamically generate nav items based on authentication state
+  const navItems = React.useMemo(() => {
+    const baseItems = [
+      { label: 'Home', path: '/' },
+      { label: 'Live Status', path: '/live' },
+      { label: 'Uploads', path: '/uploads' },
+      { label: 'Material', path: '/material' },
+    ];
+
+    if (isAuthenticated) {
+      return [...baseItems, { label: 'Logout', path: '/logout' }];
+    } else {
+      return [...baseItems, { label: 'Login', path: '/login' }, { label: 'Register', path: '/register' }];
+    }
+  }, [isAuthenticated]);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -57,7 +68,7 @@ function DrawerAppBar(props) {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar component="nav" className='!bg-[#10497a]'>
+      <AppBar component="nav" className="!bg-[#10497a]">
         <Toolbar>
           <IconButton
             color="inherit"
@@ -73,7 +84,7 @@ function DrawerAppBar(props) {
             component="div"
             sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}
           >
-            <img src='/Grundfos_Logo-White.png' alt='Grundfos Logo' className='h-10' />
+            <img src="/Grundfos_Logo-White.png" alt="Grundfos Logo" className="h-10" />
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
             {navItems.map(({ label, path }) => (
