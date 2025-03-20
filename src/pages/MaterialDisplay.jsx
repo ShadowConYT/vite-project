@@ -32,7 +32,10 @@ const MaterialDisplay = () => {
   const convertExcelDate = (serial) => {
     const date = new Date(1899, 11, 30); // Excel base date
     date.setDate(date.getDate() + Number(serial));
-    return date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`; // Format as DD/MM/YYYY
   };
   
   const rows = data?.map((row, index) => ({
