@@ -1,4 +1,4 @@
-import { loginRequest, loginSuccess, loginFailure, registerRequest, registerFailure, registerSuccess } from '../slices/authSlice';
+import { loginRequest, loginSuccess, loginFailure, registerRequest, registerFailure, registerSuccess, logOutRequest, logOutSuccess, logOutFailure } from '../slices/authSlice';
 import axios from 'axios';
 
 export const registerUser = (formData) => async (dispatch) => {
@@ -33,12 +33,12 @@ export const loadUser = () => async (dispatch) => {
     }
 }
 
-export const logOut = () => async (dispatch) => {
+export const logOutUser = () => async (dispatch) => {
     try {
-        dispatch(loginRequest());
+        dispatch(logOutRequest());
         localStorage.removeItem('access_token');
-        dispatch(loginSuccess(null));
+        dispatch(logOutSuccess(null));
     } catch (error) {
-        dispatch(loginFailure(error.message));
+        dispatch(logOutFailure(error.message));
     }
 }

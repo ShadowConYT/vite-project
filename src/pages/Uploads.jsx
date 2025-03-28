@@ -8,7 +8,7 @@ import { Button } from '@mui/material';
 import { clearShipmentErrors } from '../slices/shipmentSlice';
 import countryList from 'react-select-country-list';
 import { useNavigate } from 'react-router';
-import { logOut } from '../actions/userAction';
+import { logOutUser } from '../actions/userAction';
 import Materials from './Materials';
 
 const ShipmentTracker = () => {
@@ -70,6 +70,7 @@ const ShipmentTracker = () => {
         const sheetName = workBook.SheetNames[0];
         const sheet = workBook.Sheets[sheetName];
         const sheetData = XLSX.utils.sheet_to_json(sheet);
+        console.log(sheetData);
         setExcelData(sheetData);
       } catch (err) {
         console.error("Error parsing excel file", err);
@@ -99,7 +100,11 @@ const ShipmentTracker = () => {
         ref: content["HBL No"],
         liner_name: content["Liner"],
         origin_location: content["Origin Country"],
+        mode_of_transport: content["MOT"].toLowerCase(),
+        plant: content["Plant"],
+        invoice_date: content["Invoice Date"]
       }));
+      console.log(newApiFormData);
       setListFormData(newApiFormData);
     }
 
@@ -190,167 +195,170 @@ const ShipmentTracker = () => {
   }, [uploadedFile, listFormData, trackingNumbers, dispatch]);
 
   const logOutHandler = () => {
-    dispatch(logOut());
+    dispatch(logOutUser());
   }
 
   console.log(trackingNumbers)
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className='flex justify-between items-center mb-8'>
-          <div className="text-left mb-8">
+    <div className="min-h-screen bg-gray-50 pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto"> 
+        <div className='flex justify-between items-center mb-4'>
+          <div className="text-left mb-1">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Shipment Tracker</h1>
             <p className="text-gray-600">Track multiple shipments across different carriers</p>
           </div>
         </div>
-
         <Materials />
+        <div className='border-2 border-black p-3 rounded-xl'>
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-4">
+            <div>
+              <h1 className='font-bold text-xl mb-4'>HBL Tracker</h1>
+            </div>
+            <div className="mb-6">
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload XLSX File (Optional)
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept=".xlsx"
+                      onChange={handleFileUpload}
+                      className="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0
+                        file:text-sm file:font-medium
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100"
+                    />
+                    {uploadedFile && (
+                      <button
+                        onClick={removeUploadedFile}
+                        className="p-2 text-red-600 hover:text-red-800"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="mb-6">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Upload XLSX File (Optional)
-                </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    accept=".xlsx"
-                    onChange={handleFileUpload}
-                    className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-md file:border-0
-                      file:text-sm file:font-medium
-                      file:bg-blue-50 file:text-blue-700
-                      hover:file:bg-blue-100"
-                  />
-                  {uploadedFile && (
+            <div className="space-y-4">
+              {trackingNumbers.map((item) => (
+                <div key={item.id} className="flex gap-4 items-center">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Enter tracking number"
+                      value={item.ref}
+                      onChange={(e) => handleInputChange(item.id, 'ref', e.target.value)}
+                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      disabled={!!uploadedFile}
+                    />
+                  </div>
+                  <div>
+                    <select
+                      value={item.mode_of_transport}
+                      onChange={(e) => handleInputChange(item.id, 'mode_of_transport', e.target.value)}
+                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      disabled={!!uploadedFile}
+                    >
+                      <option value="">Select MOT</option>
+                      <option value="sea">Sea</option>
+                      <option value="air">Air</option>
+                    </select>
+                  </div>
+                  <div className='w-48'>
+                    <input
+                      type="text"
+                      placeholder="Enter Plant"
+                      value={item.plant}
+                      onChange={(e) => handleInputChange(item.id, 'plant', e.target.value)}
+                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      disabled={!!uploadedFile}
+                    />
+                  </div>
+                  <div className='w-48'>
+                    <select
+                      value={item.origin_location}
+                      onChange={(e) => handleInputChange(item.id, 'origin_location', e.target.value)}
+                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      disabled={!!uploadedFile}
+                    >
+                      <option value="">Select Origin Location</option>
+                      {options.map((option) => (
+                        <option key={option.value} value={option.label}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="w-48">
+                    <select
+                      value={item.liner_name}
+                      onChange={(e) => handleInputChange(item.id, 'liner_name', e.target.value)}
+                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      disabled={!!uploadedFile}
+                    >
+                      {carriers.map((carrier) => (
+                        <option key={carrier.value} value={carrier.value}>
+                          {carrier.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className='w-48'>
+                    <input
+                      type="date"
+                      placeholder="Enter Invoice Date"
+                      value={item.invoice_date}
+                      onChange={(e) => handleInputChange(item.id, 'invoice_date', e.target.value)}
+                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      disabled={!!uploadedFile}
+                    />
+                  </div>
+                  {trackingNumbers.length > 1 && !uploadedFile && (
                     <button
-                      onClick={removeUploadedFile}
+                      onClick={() => removeTrackingNumber(item.id)}
                       className="p-2 text-red-600 hover:text-red-800"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   )}
                 </div>
-              </div>
+              ))}
             </div>
-          </div>
 
-          <div className="space-y-4">
-            {trackingNumbers.map((item) => (
-              <div key={item.id} className="flex gap-4 items-center">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    placeholder="Enter tracking number"
-                    value={item.ref}
-                    onChange={(e) => handleInputChange(item.id, 'ref', e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    disabled={!!uploadedFile}
-                  />
-                </div>
-                <div>
-                  <select
-                    value={item.mode_of_transport}
-                    onChange={(e) => handleInputChange(item.id, 'mode_of_transport', e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    disabled={!!uploadedFile}
-                  >
-                    <option value="">Select MOT</option>
-                    <option value="sea">Sea</option>
-                    <option value="air">Air</option>
-                  </select>
-                </div>
-                <div className='w-48'>
-                  <input
-                    type="text"
-                    placeholder="Enter Plant"
-                    value={item.plant}
-                    onChange={(e) => handleInputChange(item.id, 'plant', e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    disabled={!!uploadedFile}
-                  />
-                </div>
-                <div className='w-48'>
-                  <select
-                    value={item.origin_location}
-                    onChange={(e) => handleInputChange(item.id, 'origin_location', e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    disabled={!!uploadedFile}
-                  >
-                    <option value="">Select Origin Location</option>
-                    {options.map((option) => (
-                      <option key={option.value} value={option.label}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="w-48">
-                  <select
-                    value={item.liner_name}
-                    onChange={(e) => handleInputChange(item.id, 'liner_name', e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    disabled={!!uploadedFile}
-                  >
-                    {carriers.map((carrier) => (
-                      <option key={carrier.value} value={carrier.value}>
-                        {carrier.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className='w-48'>
-                  <input
-                    type="date"
-                    placeholder="Enter Invoice Date"
-                    value={item.invoice_date}
-                    onChange={(e) => handleInputChange(item.id, 'invoice_date', e.target.value)}
-                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    disabled={!!uploadedFile}
-                  />
-                </div>
-                {trackingNumbers.length > 1 && !uploadedFile && (
-                  <button
-                    onClick={() => removeTrackingNumber(item.id)}
-                    className="p-2 text-red-600 hover:text-red-800"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className='p-5 float-right'>
-            <Button color='' onClick={trackShipments}>
-                Submit
-            </Button> 
-          </div>
-
-          {!uploadedFile && (
-            <div className="mt-4 flex gap-4">
-              <button
-                onClick={addTrackingNumber}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
-              >
-                <PlusCircle className="w-5 h-5" />
-                Add Another Tracking Number
-              </button>
+            <div className='p-5 float-right'>
+              <Button className='!bg-blue-600 !text-white !font-normal hover:!bg-blue-700' onClick={trackShipments}>
+                  Submit
+              </Button> 
             </div>
-          )}
-        </div>
 
-        <div className='w-full flex justify-center'>
-          <button onClick={() => navigate('/live')} className='w-48 bg-blue-600 text-white p-2 rounded-xl'>
-            Check Live Status
-          </button>
-          <button onClick={() => logOutHandler()} className='w-48 bg-red-600 text-white  p-2 rounded-xl'>
-            Logout
-          </button>
+            {!uploadedFile && (
+              <div className="mt-4 flex gap-4">
+                <button
+                  onClick={addTrackingNumber}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                >
+                  <PlusCircle className="w-5 h-5" />
+                  Add Another Tracking Number
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className='w-full flex justify-center'>
+            <Button onClick={() => navigate('/live')} className='!w-48 !bg-blue-600 !text-white !p-2 !rounded-xl'>
+              Check Live Status
+            </Button>
+            {/* <button onClick={() => logOutHandler()} className='w-48 bg-red-600 text-white  p-2 rounded-xl'>
+              Logout
+            </button> */}
+          </div>
         </div>
       </div>
     </div>

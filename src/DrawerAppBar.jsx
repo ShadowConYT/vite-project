@@ -15,31 +15,49 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { logOutUser } from './actions/userAction';
+// import axios from 'axios';
 
 const drawerWidth = 240;
 
 function DrawerAppBar(props) {
+  const dispatch = useDispatch();
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, access_token, user } = useSelector((state) => state.auth); // Access the token from Redux
 
+  const logOut = () => {
+    dispatch(logOutUser());
+    // localStorage.removeItem('access_token');
+    // delete axios.defaults.headers.common['Authorization'];
+    // store.dispatch(logOutRequest());
+  };
+
+  const isAdmin = user && user.isAdmin;
   // Dynamically generate nav items based on authentication state
   const navItems = React.useMemo(() => {
-    const baseItems = [
-      { label: 'Home', path: '/' },
-      { label: 'Live Status', path: '/live' },
-      { label: 'Uploads', path: '/uploads' },
-      { label: 'Material', path: '/material' },
-    ];
+    const baseItems = [{ label: 'Home', path: '/' }];
 
     if (isAuthenticated) {
-      return [...baseItems, { label: 'Logout', path: '/logout' }];
+      return [
+        ...baseItems,
+        { label: 'Live Status', path: '/live' },
+        { label: 'Uploads', path: '/uploads' },
+        { label: 'Material', path: '/material' },
+        { label: 'Delivered', path: '/delivered' },
+        ...(isAdmin ? [{ label: 'Admin Panel', path: '/admin' }] : []), // Show Admin Panel if user is admin
+        // { label: 'Logout', path: '/logout' },
+      ];
     } else {
-      return [...baseItems, { label: 'Login', path: '/login' }, { label: 'Register', path: '/register' }];
+      return [
+        ...baseItems,
+        { label: 'Login', path: '/login' },
+        { label: 'Register', path: '/register' },
+      ];
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdmin]);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
@@ -59,6 +77,13 @@ function DrawerAppBar(props) {
             </ListItemButton>
           </ListItem>
         ))}
+        {isAuthenticated && (
+          <ListItem disablePadding>
+            <ListItemButton onClick={logOut} sx={{ textAlign: 'center' }}>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
     </Box>
   );
@@ -92,6 +117,11 @@ function DrawerAppBar(props) {
                 {label}
               </Button>
             ))}
+            {isAuthenticated && (
+              <Button onClick={logOut} sx={{ color: '#fff' }}>
+                Logout
+              </Button>
+            )}
           </Box>
         </Toolbar>
       </AppBar>
@@ -114,6 +144,15 @@ function DrawerAppBar(props) {
       </nav>
       <Box component="main" sx={{ p: 3 }}>
         <Toolbar />
+        {/* Display user information */}
+        {isAuthenticated && (
+          <Box>
+            <Typography variant="h6">Welcome, {user && user.username}</Typography>
+            <Typography variant="body1">Email: {user && user.email}</Typography>
+            <Typography variant="body1">User ID: {user && user.userId}</Typography>
+            {user && user.isAdmin && <Typography variant="body1">Role: Admin</Typography>}
+          </Box>
+        )}
       </Box>
     </Box>
   );
